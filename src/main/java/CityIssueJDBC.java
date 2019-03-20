@@ -1,4 +1,6 @@
 import java.sql.*;
+
+import com.sun.org.apache.bcel.internal.generic.NOP;
 import org.apache.logging.log4j.*;
 
 public class CityIssueJDBC {
@@ -7,7 +9,7 @@ public class CityIssueJDBC {
     private String login;
     private String password;
     PreparedStatement preparedStatement;
-    private Connection connection;
+    protected Connection connection;
 
     private static final Logger logger = LogManager.getLogger(CityIssueJDBC.class);
 
@@ -19,7 +21,7 @@ public class CityIssueJDBC {
         if (jdbcInstance == null) {
             synchronized (CityIssueJDBC.class) {
                 jdbcInstance = new CityIssueJDBC();
-               logger.info("JDBC instance was created.");
+                logger.info("JDBC instance was created.");
             }
         }
         return jdbcInstance;
@@ -34,7 +36,7 @@ public class CityIssueJDBC {
     public void connectToDB() {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            url = "jdbc:mysql://localhost/city-issue_db?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
+            url = "jdbc:mysql://localhost/city_issue_db?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
             login = "root";
             password = "root784512";
             connection = DriverManager.getConnection(url, login, password);
@@ -67,35 +69,40 @@ public class CityIssueJDBC {
         }
         try {
             preparedStatement = connection.prepareStatement(
-                    "INSERT INTO users(user_name, user_last_name, phone, email) VALUES (?, ?, ?, ?)");
-        preparedStatement.setString(1, firstName);
-        preparedStatement.setString(2, lastName);
-        preparedStatement.setString(3, phone);
-        preparedStatement.setString(4, email);
-        preparedStatement.addBatch();
-        preparedStatement.executeBatch();
-        preparedStatement.close();
-        logger.trace("Contact: " + firstName + " "+ lastName + " was created successfully.");
+                    "INSERT INTO users(first_name, last_name, phone, email) VALUES (?, ?, ?, ?)");
+            preparedStatement.setString(1, firstName);
+            preparedStatement.setString(2, lastName);
+            preparedStatement.setString(3, phone);
+            preparedStatement.setString(4, email);
+            preparedStatement.addBatch();
+            preparedStatement.executeBatch();
+            logger.trace("Contact: " + firstName + " " + lastName + " was created successfully.");
         } catch (SQLException e) {
             logger.error("Something goes wrong with the DB...");
             e.printStackTrace();
-        }
-        try {
-            connection.setAutoCommit(true);
-        } catch (SQLException e) {
-            logger.error("AutoCommit can't be turned on...");
-            e.printStackTrace();
-        }
-    }
-
-    public void closeConnection() {
-        try {
-            if (connection != null) {
-                connection.close();
+        } finally {
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    logger.error("Closing preparedStatement failed.");
+                }
             }
-        } catch (SQLException e) {
-            logger.error("Closing connection failed.");
-            e.printStackTrace();
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                logger.error("AutoCommit can't be turned on...");
+                e.printStackTrace();
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                    logger.info("Connection was closed successfully.");
+                } catch (SQLException e) {
+                    logger.error("Closing connection failed.");
+                }
+            }
+
         }
     }
 }

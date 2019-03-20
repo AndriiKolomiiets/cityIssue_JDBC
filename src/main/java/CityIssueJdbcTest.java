@@ -12,7 +12,6 @@ public class CityIssueJdbcTest {
         cityIssueJDBC.connectToDB();
         getUserInput();
         cityIssueJDBC.buildUserInfoIntoDB(firstName, lastName, phone, email);
-        cityIssueJDBC.closeConnection();
     }
 
     public static void getUserInput() {
