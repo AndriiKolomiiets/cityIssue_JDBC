@@ -9,7 +9,7 @@ public class CityIssueJdbcTest {
 
     public static void main(String[] args) {
         CityIssueJDBC cityIssueJDBC = CityIssueJDBC.getInstance();
-        cityIssueJDBC.connectToDB();
+//        cityIssueJDBC.connectToDB();
         getUserInput();
         cityIssueJDBC.buildUserInfoIntoDB(firstName, lastName, phone, email);
     }

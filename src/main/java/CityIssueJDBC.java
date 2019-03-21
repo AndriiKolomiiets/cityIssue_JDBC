@@ -1,13 +1,12 @@
 import java.sql.*;
 
-import com.sun.org.apache.bcel.internal.generic.NOP;
 import org.apache.logging.log4j.*;
 
 public class CityIssueJDBC {
     static CityIssueJDBC jdbcInstance;
-    private String url;
-    private String login;
-    private String password;
+    private static final String URL = "jdbc:mysql://localhost/city_issue_db?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";;
+    private static final String LOGIN = "root";
+    private static final String PASSWORD = "root784512";
     PreparedStatement preparedStatement;
     protected Connection connection;
 
@@ -36,22 +35,7 @@ public class CityIssueJDBC {
     public void connectToDB() {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            url = "jdbc:mysql://localhost/city_issue_db?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
-            login = "root";
-            password = "root784512";
-            connection = DriverManager.getConnection(url, login, password);
-            logger.trace("Connection successful!");
-        } catch (
-                Exception ex) {
-            logger.error("Connection failed...");
-            logger.error(ex);
-        }
-    }
-
-    public void connectToDB(String url, String login, String pass) {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            connection = DriverManager.getConnection(url, login, pass);
+            connection = DriverManager.getConnection(URL, LOGIN, PASSWORD);
             logger.trace("Connection successful!");
         } catch (
                 Exception ex) {
@@ -61,6 +45,7 @@ public class CityIssueJDBC {
     }
 
     public void buildUserInfoIntoDB(String firstName, String lastName, String phone, String email) {
+        connectToDB();
         try {
             connection.setAutoCommit(false);
         } catch (SQLException e) {
