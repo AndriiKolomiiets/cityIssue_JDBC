@@ -1,10 +1,14 @@
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.Timeout;
 
 import java.sql.*;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 public class CityIssueJDBCTest {
     CityIssueJDBC cityIssueJDBC;
@@ -14,6 +18,9 @@ public class CityIssueJDBCTest {
     Connection testConnection;
     Statement statement;
     ResultSet resultSet;
+
+    @Rule
+    public TestRule timeout = new Timeout(3000);
 
     @Before
     public void setUp() {
@@ -29,6 +36,30 @@ public class CityIssueJDBCTest {
     @Test
     public void connectToDB() {
         assertNotNull(cityIssueJDBC.connection);
+    }
+
+    @Test
+    public void mockConnectToDB() throws SQLException {
+        final DriverManager mockDriverManager = mock(DriverManager.class);
+        mockDriverManager.getConnection(URL, LOGIN, PASSWORD);
+        verify(mockDriverManager, times(1)).getConnection(URL, LOGIN, PASSWORD);
+    }
+
+    @Test
+    public void buildUserInfoIntoDB_Mock() throws SQLException {
+        final CityIssueJDBC mockCityIssueJDBC = mock(CityIssueJDBC.class);
+        final Connection mockConnection = mock(Connection.class);
+        final String sqlQuery = "INSERT INTO users(first_name, last_name, phone, email) VALUES ('firstName', 'lastName', '+38test#', '@email')";
+        final PreparedStatement mockPreparedStatement = mock(PreparedStatement.class);
+        when(mockConnection.prepareStatement(sqlQuery)).thenReturn(mockPreparedStatement);
+        mockConnection.prepareStatement(sqlQuery);
+        mockPreparedStatement.executeBatch();
+
+        mockCityIssueJDBC.buildUserInfoIntoDB("firstName", "lastName", "+38test#", "@email");
+
+        verify(mockConnection, times(1)).prepareStatement(sqlQuery);
+        verify(mockPreparedStatement, times(1)).executeBatch();
+        verify(mockCityIssueJDBC, times(1)).buildUserInfoIntoDB("firstName", "lastName", "+38test#", "@email");
     }
 
     @Test
